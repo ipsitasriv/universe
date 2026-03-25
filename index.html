@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Uni Verse – Student Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="screen active">
+    <div class="login-box">
+      <div class="logo">🪐 Uni Verse</div>
+      <p class="tagline">Your all-in-one student companion</p>
+      <input type="text" id="login-name" placeholder="Enter your name" />
+      <button onclick="doLogin()">Get Started →</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app-screen" class="screen">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">🪐 Uni Verse</div>
+      <nav>
+        <a href="#" class="nav-link active" onclick="showPage('dashboard', this)">🏠 Dashboard</a>
+        <a href="#" class="nav-link" onclick="showPage('attendance', this)">📅 Attendance</a>
+        <a href="#" class="nav-link" onclick="showPage('expenses', this)">💰 Expenses</a>
+        <a href="#" class="nav-link" onclick="showPage('tasks', this)">✅ Tasks</a>
+        <a href="#" class="nav-link" onclick="showPage('mood', this)">🧠 Mood</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="sidebar-user">👤 Student</span>
+        <button class="logout-btn" onclick="doLogout()">Logout</button>
+      </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <main class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div id="page-dashboard" class="page active">
+        <h1>Good day, <span id="welcome-name">Student</span>! 👋</h1>
+        <p class="sub">Here's your overview for today.</p>
+
+        <div class="cards">
+          <div class="card blue" onclick="showPage('attendance', document.querySelector('[onclick*=attendance]'))">
+            <div class="card-icon">📅</div>
+            <div class="card-label">Attendance</div>
+            <div class="card-value" id="dash-attendance">--%</div>
+          </div>
+          <div class="card green" onclick="showPage('expenses', document.querySelector('[onclick*=expenses]'))">
+            <div class="card-icon">💰</div>
+            <div class="card-label">Budget Left</div>
+            <div class="card-value" id="dash-budget">₹--</div>
+          </div>
+          <div class="card purple" onclick="showPage('tasks', document.querySelector('[onclick*=tasks]'))">
+            <div class="card-icon">✅</div>
+            <div class="card-label">Tasks Done</div>
+            <div class="card-value" id="dash-tasks">--/--</div>
+          </div>
+          <div class="card orange" onclick="showPage('mood', document.querySelector('[onclick*=mood]'))">
+            <div class="card-icon">🧠</div>
+            <div class="card-label">Mood Today</div>
+            <div class="card-value" id="dash-mood">--</div>
+          </div>
+        </div>
+
+        <div class="alerts-box" id="alerts-box">
+          <h3>⚠️ Alerts & Suggestions</h3>
+          <div id="alerts-list"><p class="no-alert">No alerts right now. Keep it up! 🎉</p></div>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE PAGE -->
+      <div id="page-attendance" class="page">
+        <h1>📅 Attendance Tracker</h1>
+        <p class="sub">Track your subject-wise attendance below.</p>
+
+        <div class="form-box">
+          <input type="text" id="subj-name" placeholder="Subject name (e.g. Maths)" />
+          <input type="number" id="subj-attended" placeholder="Classes attended" min="0"/>
+          <input type="number" id="subj-total" placeholder="Total classes" min="1"/>
+          <button onclick="addSubject()">Add Subject</button>
+        </div>
+
+        <table id="attendance-table" class="data-table">
+          <thead>
+            <tr><th>Subject</th><th>Attended</th><th>Total</th><th>%</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="attendance-body"></tbody>
+        </table>
+
+        <div class="overall-box">
+          Overall Attendance: <strong id="overall-attendance">--%</strong>
+        </div>
+      </div>
+
+      <!-- EXPENSES PAGE -->
+      <div id="page-expenses" class="page">
+        <h1>💰 Expense Manager</h1>
+        <p class="sub">Set a budget and track your spending.</p>
+
+        <div class="form-box">
+          <input type="number" id="budget-input" placeholder="Set monthly budget (₹)" min="0"/>
+          <button onclick="setBudget()">Set Budget</button>
+        </div>
+
+        <div class="budget-display" id="budget-display" style="display:none">
+          <span>Budget: ₹<strong id="budget-total">0</strong></span>
+          <span>Spent: ₹<strong id="budget-spent">0</strong></span>
+          <span>Left: ₹<strong id="budget-left">0</strong></span>
+        </div>
+
+        <div class="form-box" id="expense-form" style="display:none">
+          <input type="text" id="exp-name" placeholder="Expense name (e.g. Food)" />
+          <input type="number" id="exp-amount" placeholder="Amount (₹)" min="1"/>
+          <button onclick="addExpense()">Add Expense</button>
+        </div>
+
+        <table id="expense-table" class="data-table" style="display:none">
+          <thead>
+            <tr><th>Description</th><th>Amount</th><th>Action</th></tr>
+          </thead>
+          <tbody id="expense-body"></tbody>
+        </table>
+      </div>
+
+      <!-- TASKS PAGE -->
+      <div id="page-tasks" class="page">
+        <h1>✅ Task Planner</h1>
+        <p class="sub">Manage your to-dos and assignments.</p>
+
+        <div class="form-box">
+          <input type="text" id="task-name" placeholder="Task name (e.g. Submit assignment)" />
+          <input type="date" id="task-due" />
+          <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <div id="task-list" class="task-list"></div>
+      </div>
+
+      <!-- MOOD PAGE -->
+      <div id="page-mood" class="page">
+        <h1>🧠 Mood Tracker</h1>
+        <p class="sub">Log how you're feeling today. Your well-being matters!</p>
+
+        <div class="mood-picker">
+          <p>How are you feeling today?</p>
+          <div class="mood-buttons">
+            <button class="mood-btn" onclick="logMood('😄 Great', this)">😄<br>Great</button>
+            <button class="mood-btn" onclick="logMood('🙂 Good', this)">🙂<br>Good</button>
+            <button class="mood-btn" onclick="logMood('😐 Okay', this)">😐<br>Okay</button>
+            <button class="mood-btn" onclick="logMood('😞 Low', this)">😞<br>Low</button>
+            <button class="mood-btn" onclick="logMood('😩 Terrible', this)">😩<br>Terrible</button>
+          </div>
+        </div>
+
+        <div class="mood-log" id="mood-log">
+          <h3>Mood History</h3>
+          <ul id="mood-list"><li class="no-data">No entries yet.</li></ul>
+        </div>
+
+        <div class="burnout-box" id="burnout-box" style="display:none">
+          🚨 <strong>Burnout Risk Detected!</strong> You've been feeling low for several days. Consider taking a break or talking to someone you trust.
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
