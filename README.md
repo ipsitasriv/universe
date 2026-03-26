@@ -1,6 +1,5 @@
 # 🪐 Uni Verse – Student Productivity App
 
-A beginner-friendly web application based on the Uni Verse mini project synopsis.
 
 ## 📁 Project Structure
 
@@ -13,14 +12,6 @@ universe/
 │   └── app.js        ← All logic (JavaScript)
 └── README.md         ← This file
 ```
-
-## 🚀 How to Run
-
-**No installation needed!**
-
-1. Unzip the downloaded folder
-2. Open `index.html` in any modern browser (Chrome, Firefox, Edge)
-3. That's it! The app runs entirely in your browser.
 
 ## ✨ Features
 
@@ -45,7 +36,3 @@ universe/
 - **CSS** – Styling (dark theme, responsive)
 - **JavaScript** – Logic & localStorage
 
-## 📌 Notes for Students
-
-- This is a **frontend-only** demo version. For the full project described in the synopsis, you would add a Flutter mobile app + Firebase backend.
-- All alert logic (attendance < 75%, budget exceeded, burnout detection) mirrors the use cases described in the synopsis.
