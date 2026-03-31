@@ -9,20 +9,21 @@
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
   <div id="login-screen" class="screen active">
     <div class="login-box">
       <div class="logo">🪐 Uni Verse</div>
       <p class="tagline">Your all-in-one student companion</p>
-      <input type="text" id="login-name" placeholder="Enter your name" />
-      <button onclick="doLogin()">Get Started →</button>
+      <input type="text" id="login-name" placeholder="Enter your username" />
+      <input type="password" id="login-pass" placeholder="Enter your password" />
+      <div class="auth-buttons">
+        <button onclick="doLogin()">Login</button>
+        <button class="secondary-btn" onclick="doSignUp()">Sign Up</button>
+      </div>
     </div>
   </div>
 
-  <!-- MAIN APP -->
   <div id="app-screen" class="screen">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">🪐 Uni Verse</div>
       <nav>
@@ -38,10 +39,8 @@
       </div>
     </aside>
 
-    <!-- CONTENT AREA -->
     <main class="content">
 
-      <!-- DASHBOARD PAGE -->
       <div id="page-dashboard" class="page active">
         <h1>Good day, <span id="welcome-name">Student</span>! 👋</h1>
         <p class="sub">Here's your overview for today.</p>
@@ -75,7 +74,6 @@
         </div>
       </div>
 
-      <!-- ATTENDANCE PAGE -->
       <div id="page-attendance" class="page">
         <h1>📅 Attendance Tracker</h1>
         <p class="sub">Track your subject-wise attendance below.</p>
@@ -99,7 +97,6 @@
         </div>
       </div>
 
-      <!-- EXPENSES PAGE -->
       <div id="page-expenses" class="page">
         <h1>💰 Expense Manager</h1>
         <p class="sub">Set a budget and track your spending.</p>
@@ -129,7 +126,6 @@
         </table>
       </div>
 
-      <!-- TASKS PAGE -->
       <div id="page-tasks" class="page">
         <h1>✅ Task Planner</h1>
         <p class="sub">Manage your to-dos and assignments.</p>
@@ -143,7 +139,6 @@
         <div id="task-list" class="task-list"></div>
       </div>
 
-      <!-- MOOD PAGE -->
       <div id="page-mood" class="page">
         <h1>🧠 Mood Tracker</h1>
         <p class="sub">Log how you're feeling today. Your well-being matters!</p>
