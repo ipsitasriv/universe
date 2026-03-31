@@ -469,3 +469,25 @@ h1 {
   .sidebar { display: none; }
   .content { margin-left: 0; padding: 20px; }
 }
+
+/* =====================
+   AUTH BUTTONS
+   ===================== */
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.auth-buttons button {
+  flex: 1;
+}
+
+.secondary-btn {
+  background: transparent !important;
+  border: 1px solid var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.secondary-btn:hover {
+  background: rgba(124,106,255,0.1) !important;
+}
