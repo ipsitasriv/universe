@@ -1,39 +1,101 @@
 // =============================================
 // UNI VERSE — app.js
-// Beginner-friendly, no frameworks needed
-// Data saved in localStorage (browser storage)
+// Multi-user password auth via localStorage
 // =============================================
+
+// Global variable to track logged-in user
+let currentUser = null;
 
 // ── HELPERS ──────────────────────────────────
 
-// Save any object to localStorage under a key
-function save(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+// Raw access for global settings (like users list and current session)
+function saveGlobal(key, data) { 
+  localStorage.setItem(key, JSON.stringify(data)); 
 }
 
-// Load data from localStorage (returns null if not found)
+function loadGlobal(key) { 
+  const val = localStorage.getItem(key); 
+  return val ? JSON.parse(val) : null; 
+}
+
+// User-scoped data saving (automatically prefixes keys with username)
+function save(key, data) {
+  if (!currentUser) return;
+  localStorage.setItem(`${currentUser}_${key}`, JSON.stringify(data));
+}
+
 function load(key) {
-  const val = localStorage.getItem(key);
+  if (!currentUser) return null;
+  const val = localStorage.getItem(`${currentUser}_${key}`);
   return val ? JSON.parse(val) : null;
 }
 
-// Get today's date as a string like "2025-06-10"
 function today() {
   return new Date().toISOString().split('T')[0];
 }
 
 // ── LOGIN / LOGOUT ────────────────────────────
 
+function doSignUp() {
+  const name = document.getElementById('login-name').value.trim();
+  const pass = document.getElementById('login-pass').value;
+
+  if (!name || !pass) { alert('Please enter both name and password!'); return; }
+
+  const users = loadGlobal('uv_users') || {};
+  if (users[name]) {
+    alert('User already exists! Please click Login instead.');
+    return;
+  }
+
+  // Save credentials (Note: stored in plain text for educational simplicity)
+  users[name] = pass;
+  saveGlobal('uv_users', users);
+  
+  loginUser(name);
+}
+
 function doLogin() {
   const name = document.getElementById('login-name').value.trim();
-  if (!name) { alert('Please enter your name!'); return; }
-  save('uv_user', name);
+  const pass = document.getElementById('login-pass').value;
+
+  if (!name || !pass) { alert('Please enter both name and password!'); return; }
+
+  const users = loadGlobal('uv_users') || {};
+  if (!users[name]) { 
+    alert('User not found. Please click Sign Up first!'); 
+    return; 
+  }
+  
+  if (users[name] !== pass) { 
+    alert('Incorrect password!'); 
+    return; 
+  }
+
+  loginUser(name);
+}
+
+function loginUser(name) {
+  currentUser = name;
+  saveGlobal('uv_current_user', name);
+
+  // Clear inputs for next time
+  document.getElementById('login-name').value = '';
+  document.getElementById('login-pass').value = '';
+
   startApp(name);
 }
 
 function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('uv_current_user');
+  
+  // Hide UI and return to login screen
   document.getElementById('login-screen').classList.add('active');
   document.getElementById('app-screen').classList.remove('active');
+  
+  // Reset navigation to default for next login
+  showPage('dashboard', document.querySelector('.nav-link'));
 }
 
 function startApp(name) {
@@ -41,29 +103,40 @@ function startApp(name) {
   document.getElementById('app-screen').classList.add('active');
   document.getElementById('welcome-name').textContent = name;
   document.getElementById('sidebar-user').textContent = '👤 ' + name;
+  
+  // Render all module data specific to THIS user
+  renderAttendance();
+  renderExpenses();
+  renderTasks();
+  renderMoods();
+
+  // Reset/Show Budget UI based on the new user's saved data
+  if (getBudget() > 0) {
+    document.getElementById('budget-display').style.display = 'flex';
+    document.getElementById('expense-form').style.display = 'flex';
+    document.getElementById('expense-table').style.display = 'table';
+  } else {
+    document.getElementById('budget-display').style.display = 'none';
+    document.getElementById('expense-form').style.display = 'none';
+    document.getElementById('expense-table').style.display = 'none';
+  }
+
   refreshDashboard();
 }
 
 // ── PAGE NAVIGATION ───────────────────────────
 
 function showPage(pageId, linkEl) {
-  // Hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  // Remove active from all nav links
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  // Show selected page
   document.getElementById('page-' + pageId).classList.add('active');
-  // Mark nav link active
   if (linkEl) linkEl.classList.add('active');
-  // Refresh dashboard if switching to it
   if (pageId === 'dashboard') refreshDashboard();
 }
 
 // ── ATTENDANCE ────────────────────────────────
 
-function getSubjects() {
-  return load('uv_subjects') || [];
-}
+function getSubjects() { return load('uv_subjects') || []; }
 
 function addSubject() {
   const name     = document.getElementById('subj-name').value.trim();
@@ -79,7 +152,6 @@ function addSubject() {
   subjects.push({ id: Date.now(), name, attended, total });
   save('uv_subjects', subjects);
 
-  // Clear inputs
   document.getElementById('subj-name').value = '';
   document.getElementById('subj-attended').value = '';
   document.getElementById('subj-total').value = '';
@@ -180,12 +252,6 @@ function renderExpenses() {
         <td><button class="del-btn" onclick="deleteExpense(${e.id})">Delete</button></td>
       </tr>`;
   });
-
-  if (budget > 0) {
-    document.getElementById('budget-display').style.display = 'flex';
-    document.getElementById('expense-form').style.display = 'flex';
-    document.getElementById('expense-table').style.display = 'table';
-  }
 }
 
 // ── TASKS ─────────────────────────────────────
@@ -248,13 +314,12 @@ function renderTasks() {
 function getMoods() { return load('uv_moods') || []; }
 
 function logMood(mood, btn) {
-  // Highlight selected button
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   const moods = getMoods();
-  moods.unshift({ date: today(), mood }); // add to start
-  if (moods.length > 30) moods.pop();    // keep max 30 entries
+  moods.unshift({ date: today(), mood }); 
+  if (moods.length > 30) moods.pop();    
   save('uv_moods', moods);
   renderMoods();
 }
@@ -272,7 +337,6 @@ function renderMoods() {
     });
   }
 
-  // Burnout check: if last 3 entries are all low/terrible
   const lowMoods = ['😞 Low', '😩 Terrible'];
   const recent = moods.slice(0, 3);
   const burnout = recent.length === 3 && recent.every(m => lowMoods.includes(m.mood));
@@ -282,32 +346,26 @@ function renderMoods() {
 // ── DASHBOARD ─────────────────────────────────
 
 function refreshDashboard() {
-  // Attendance %
   const subjects = getSubjects();
   let totalA = 0, totalC = 0;
   subjects.forEach(s => { totalA += s.attended; totalC += s.total; });
   const attPct = totalC > 0 ? Math.round((totalA / totalC) * 100) + '%' : 'N/A';
   document.getElementById('dash-attendance').textContent = attPct;
 
-  // Budget left
   const budget  = getBudget();
   const spent   = getExpenses().reduce((s, e) => s + e.amount, 0);
   document.getElementById('dash-budget').textContent = budget > 0 ? '₹' + (budget - spent).toFixed(0) : 'Not Set';
 
-  // Tasks
   const tasks    = getTasks();
   const doneCnt  = tasks.filter(t => t.done).length;
   document.getElementById('dash-tasks').textContent = tasks.length > 0 ? `${doneCnt}/${tasks.length}` : '0/0';
 
-  // Mood
   const moods = getMoods();
   document.getElementById('dash-mood').textContent = moods.length > 0 ? moods[0].mood : 'Not Logged';
 
-  // Alerts
   const alertsList = document.getElementById('alerts-list');
   const alerts = [];
 
-  // Attendance warning
   if (totalC > 0 && Math.round((totalA / totalC) * 100) < 75) {
     alerts.push({ type: 'warn', msg: '📅 Your overall attendance is below 75%! Attend more classes.' });
   }
@@ -318,14 +376,12 @@ function refreshDashboard() {
     }
   });
 
-  // Budget alert
   if (budget > 0 && spent > budget) {
     alerts.push({ type: 'warn', msg: '💰 You have exceeded your monthly budget!' });
   } else if (budget > 0 && (budget - spent) < budget * 0.1) {
     alerts.push({ type: 'warn', msg: '💰 Less than 10% of your budget remains.' });
   }
 
-  // Burnout alert
   const lowMoods = ['😞 Low', '😩 Terrible'];
   const recent   = moods.slice(0, 3);
   if (recent.length === 3 && recent.every(m => lowMoods.includes(m.mood))) {
@@ -335,31 +391,16 @@ function refreshDashboard() {
   if (alerts.length === 0) {
     alertsList.innerHTML = '<p class="no-alert">No alerts right now. Keep it up! 🎉</p>';
   } else {
-    alertsList.innerHTML = alerts.map(a =>
-      `<div class="alert-item">${a.msg}</div>`
-    ).join('');
+    alertsList.innerHTML = alerts.map(a => `<div class="alert-item">${a.msg}</div>`).join('');
   }
 }
 
 // ── INIT ──────────────────────────────────────
-// Run when the page loads
 window.onload = function () {
-  const user = load('uv_user');
+  const user = loadGlobal('uv_current_user');
+  
+  // If someone was already logged in during a previous session, restore them
   if (user) {
-    document.getElementById('login-name').value = user;
-    startApp(user);
-  }
-
-  // Render all module data (so tables are populated on load)
-  renderAttendance();
-  renderExpenses();
-  renderTasks();
-  renderMoods();
-
-  // If budget is already set, show expense UI
-  if (getBudget() > 0) {
-    document.getElementById('budget-display').style.display = 'flex';
-    document.getElementById('expense-form').style.display = 'flex';
-    document.getElementById('expense-table').style.display = 'table';
+    loginUser(user);
   }
 };
